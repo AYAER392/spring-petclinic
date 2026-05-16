@@ -7,7 +7,6 @@ pipeline {
     tools {
         // Déclare les outils configurés dans l'interface de Jenkins
         jdk 'JDK-21'
-        maven 'Maven-3.9'
     }
 
     stages {
