@@ -1,16 +1,17 @@
 pipeline {
     agent any
-   
+
     stages {
-        stage ('Build') {
+        stage('Build') {
             steps {
-            bat 'maven install'
+                bat 'mvn clean install'
             }
-            post {
-                success {
-                    junit'target/surefire-reports/**/*.xml'
-                }
-            }
+        }
+    }
+
+    post {
+        success {
+            junit 'target/surefire-reports/**/*.xml'
         }
     }
 }
