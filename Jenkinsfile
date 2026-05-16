@@ -53,6 +53,13 @@ pipeline {
                         bat 'mvnw.cmd pmd:pmd'
                     }
                 }
+
+                stage('SpotBugs') {
+                    agent { label 'test' }
+                    steps {
+                        bat 'mvnw.cmd spotbugs:spotbugs'
+                    }
+                }
             }
         }
 
@@ -67,6 +74,25 @@ pipeline {
             agent { label 'test' }
             steps {
                 bat 'mvnw.cmd clean package'
+            }
+        }
+        stage('Déploiement Nexus') {
+            agent { label 'test' }
+        
+            steps {
+                nexusArtifactUploader artifacts: [[
+                    artifactId: 'spring-petclinic',
+                    classifier: '',
+                    file: 'target/spring-petclinic-4.0.0-SNAPSHOT.jar',
+                    type: 'jar'
+                ]],
+                credentialsId: '46dccfce-4b39-4efc-b24c-e1abadccf416',
+                groupId: 'org.springframework.samples',
+                nexusUrl: 'localhost:8081',
+                nexusVersion: 'nexus3',
+                protocol: 'http',
+                repository: 'maven-snapshots',
+                version: '4.0.0-SNAPSHOT'
             }
         }
     }
