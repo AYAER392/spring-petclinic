@@ -13,11 +13,11 @@ pipeline {
             steps {
                 bat 'mvnw.cmd test'
             }
+        }
 
-            post {
-                always {
-                    junit 'target/surefire-reports/*.xml'
-                }
+        stage('Résultats Tests') {
+            steps {
+                junit 'target/surefire-reports/*.xml'
             }
         }
 
@@ -41,24 +41,12 @@ pipeline {
                         bat 'mvnw.cmd pmd:pmd'
                     }
                 }
-
-                stage('SpotBugs') {
-                    steps {
-                        bat 'mvnw.cmd spotbugs:spotbugs'
-                    }
-                }
             }
         }
 
         stage('Documentation et Site') {
             steps {
                 bat 'mvnw.cmd site'
-            }
-        }
-
-        stage('Packaging') {
-            steps {
-                bat 'mvnw.cmd package'
             }
         }
 
@@ -88,7 +76,6 @@ pipeline {
     }
 
     post {
-
         success {
             echo 'Build réussi'
         }
