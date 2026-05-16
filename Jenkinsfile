@@ -6,7 +6,7 @@ pipeline {
         stage('Checkout') {
             agent { label 'test' }
             steps {
-                git 'https://github.com/AYAER392/spring-petclinic.git'
+                git branch: 'main', url: 'https://github.com/AYAER392/spring-petclinic.git'
             }
         }
 
