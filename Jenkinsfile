@@ -57,7 +57,7 @@ pipeline {
                 stage('SpotBugs') {
                     agent { label 'test' }
                     steps {
-                        bat 'mvnw.cmd spotbugs:spotbugs'
+                        bat 'mvnw.cmd com.github.spotbugs:spotbugs-maven-plugin:spotbugs'
                     }
                 }
             }
