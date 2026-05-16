@@ -4,21 +4,21 @@ pipeline {
     stages {
 
         stage('Checkout') {
-            agent { label 'master' }
+            agent { label 'test' }
             steps {
                 git 'https://github.com/AYAER392/spring-petclinic.git'
             }
         }
 
         stage('Compilation') {
-            agent { label 'master' }
+            agent { label 'test' }
             steps {
                 bat 'mvnw.cmd clean compile'
             }
         }
 
         stage('Tests Unitaires') {
-            agent { label 'master' }
+            agent { label 'test' }
             steps {
                 bat 'mvnw.cmd test'
             }
@@ -30,7 +30,7 @@ pipeline {
         }
 
         stage('Couverture de code (Jacoco)') {
-            agent { label 'master' }
+            agent { label 'coverage' }
             steps {
                 bat 'mvnw.cmd jacoco:report'
             }
@@ -40,15 +40,15 @@ pipeline {
 
             parallel {
 
-                stage('Checkstyle - Node1') {
-                    agent { label 'master' }
+                stage('Checkstyle') {
+                    agent { label 'test' }
                     steps {
                         bat 'mvnw.cmd checkstyle:checkstyle'
                     }
                 }
 
-                stage('PMD - Node2') {
-                    agent { label 'master' }
+                stage('PMD') {
+                    agent { label 'test' }
                     steps {
                         bat 'mvnw.cmd pmd:pmd'
                     }
@@ -57,35 +57,16 @@ pipeline {
         }
 
         stage('Documentation et Site') {
-            agent { label 'master' }
+            agent { label 'docs' }
             steps {
                 bat 'mvnw.cmd site'
             }
         }
 
         stage('Packaging') {
-            agent { label 'master' }
+            agent { label 'test' }
             steps {
                 bat 'mvnw.cmd clean package'
-            }
-        }
-
-        stage('Déploiement Nexus') {
-            agent { label 'master' }
-            steps {
-                nexusArtifactUploader artifacts: [[
-                    artifactId: 'spring-petclinic',
-                    classifier: '',
-                    file: 'target/spring-petclinic-4.0.0-SNAPSHOT.jar',
-                    type: 'jar'
-                ]],
-                credentialsId: '46dccfce-4b39-4efc-b24c-e1abadccf416',
-                groupId: 'org.springframework.samples',
-                nexusUrl: 'localhost:8081',
-                nexusVersion: 'nexus3',
-                protocol: 'http',
-                repository: 'maven-snapshots',
-                version: '4.0.0-SNAPSHOT'
             }
         }
     }
