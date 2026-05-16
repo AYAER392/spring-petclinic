@@ -1,17 +1,24 @@
 pipeline {
-    agent none   // IMPORTANT pour multi-nodes
+    agent none
 
     stages {
 
+        stage('Checkout') {
+            agent { label 'master' }
+            steps {
+                git 'https://github.com/AYAER392/spring-petclinic.git'
+            }
+        }
+
         stage('Compilation') {
-            agent { label 'master' }   // ou node principal
+            agent { label 'master' }
             steps {
                 bat 'mvnw.cmd clean compile'
             }
         }
 
         stage('Tests Unitaires') {
-            agent { label 'test-node' }
+            agent { label 'master' }
             steps {
                 bat 'mvnw.cmd test'
             }
@@ -22,25 +29,26 @@ pipeline {
             }
         }
 
-        stage('Couverture de code (JaCoCo)') {
-            agent { label 'coverage-node' }
+        stage('Couverture de code (Jacoco)') {
+            agent { label 'master' }
             steps {
                 bat 'mvnw.cmd jacoco:report'
             }
         }
 
-        stage('Analyse Qualité') {
-            agent { label 'master' }
+        stage('Analyse Qualité (multi-nœuds)') {
 
             parallel {
 
-                stage('Checkstyle') {
+                stage('Checkstyle - Node1') {
+                    agent { label 'master' }
                     steps {
                         bat 'mvnw.cmd checkstyle:checkstyle'
                     }
                 }
 
-                stage('PMD') {
+                stage('PMD - Node2') {
+                    agent { label 'master' }
                     steps {
                         bat 'mvnw.cmd pmd:pmd'
                     }
@@ -48,10 +56,10 @@ pipeline {
             }
         }
 
-        stage('Documentation (Site Maven)') {
-            agent { label 'doc-node' }
+        stage('Documentation et Site') {
+            agent { label 'master' }
             steps {
-                bat 'mvnw.cmd site -DskipTests'
+                bat 'mvnw.cmd site'
             }
         }
 
@@ -84,13 +92,13 @@ pipeline {
 
     post {
         success {
-            echo 'Build réussi sur pipeline multi-nœuds'
+            echo 'Build réussi'
         }
 
         failure {
             emailext(
                 subject: 'Echec Build Jenkins',
-                body: 'Le pipeline multi-nœuds a échoué',
+                body: 'Le pipeline a échoué',
                 to: 'admin@gmail.com'
             )
         }
