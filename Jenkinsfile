@@ -1,28 +1,23 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven 3.5.2'
-        jdk 'jdk1.8.0_151'
-    }
-
     stages {
 
         stage('Checkout') {
             steps {
-                git 'https://github.com/spring-projects/spring-petclinic.git'
+                git branch: 'main', url: 'https://github.com/AYAER392/spring-petclinic.git'
             }
         }
 
         stage('Build') {
             steps {
-                bat 'mvn clean compile'
+                bat 'mvnw.cmd clean compile'
             }
         }
 
         stage('Test') {
             steps {
-                bat 'mvn test'
+                bat 'mvnw.cmd test'
             }
 
             post {
@@ -34,7 +29,7 @@ pipeline {
 
         stage('Package') {
             steps {
-                bat 'mvn package'
+                bat 'mvnw.cmd package'
             }
         }
     }
