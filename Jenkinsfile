@@ -1,33 +1,37 @@
 pipeline {
-    agent any
+    agent none   // IMPORTANT pour multi-nodes
 
     stages {
 
         stage('Compilation') {
+            agent { label 'master' }   // ou node principal
             steps {
                 bat 'mvnw.cmd clean compile'
             }
         }
 
         stage('Tests Unitaires') {
+            agent { label 'test-node' }
             steps {
                 bat 'mvnw.cmd test'
             }
-        }
-
-        stage('Résultats Tests') {
-            steps {
-                junit 'target/surefire-reports/*.xml'
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml'
+                }
             }
         }
 
-        stage('Couverture de code') {
+        stage('Couverture de code (JaCoCo)') {
+            agent { label 'coverage-node' }
             steps {
                 bat 'mvnw.cmd jacoco:report'
             }
         }
 
         stage('Analyse Qualité') {
+            agent { label 'master' }
+
             parallel {
 
                 stage('Checkstyle') {
@@ -44,19 +48,22 @@ pipeline {
             }
         }
 
-        stage('Documentation et Site') {
+        stage('Documentation (Site Maven)') {
+            agent { label 'doc-node' }
             steps {
-                bat 'mvnw.cmd site'
+                bat 'mvnw.cmd site -DskipTests'
             }
         }
 
         stage('Packaging') {
+            agent { label 'master' }
             steps {
                 bat 'mvnw.cmd clean package'
             }
         }
 
         stage('Déploiement Nexus') {
+            agent { label 'master' }
             steps {
                 nexusArtifactUploader artifacts: [[
                     artifactId: 'spring-petclinic',
@@ -77,13 +84,13 @@ pipeline {
 
     post {
         success {
-            echo 'Build réussi'
+            echo 'Build réussi sur pipeline multi-nœuds'
         }
 
         failure {
             emailext(
                 subject: 'Echec Build Jenkins',
-                body: 'Le pipeline a échoué',
+                body: 'Le pipeline multi-nœuds a échoué',
                 to: 'admin@gmail.com'
             )
         }
