@@ -89,7 +89,7 @@ pipeline {
                     ]],
                     credentialsId: '7cf6516f-468b-4fa1-b1e0-5817fbe4318d',
                     groupId: 'org.springframework.samples',
-                    nexusUrl: 'http://localhost:8081',
+                    nexusUrl: 'localhost:8081',
                     nexusVersion: 'nexus3',
                     protocol: 'http',
                     repository: 'maven-snapshots',
