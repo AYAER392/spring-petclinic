@@ -80,21 +80,7 @@ pipeline {
             agent { label 'test' }
         
             steps {
-                nexusArtifactUploader(
-                    artifacts: [[
-                        artifactId: 'spring-petclinic',
-                        classifier: '',
-                        file: 'target/spring-petclinic-4.0.0-SNAPSHOT.jar',
-                        type: 'jar'
-                    ]],
-                    credentialsId: '7cf6516f-468b-4fa1-b1e0-5817fbe4318d',
-                    groupId: 'org.springframework.samples',
-                    nexusUrl: 'localhost:8081',
-                    nexusVersion: 'nexus3',
-                    protocol: 'http',
-                    repository: 'maven-snapshots',
-                    version: '4.0.0-SNAPSHOT'
-                )
+                nexusArtifactUploader artifacts: [[artifactId: 'spring-petclinic', classifier: '', file: 'target/spring-petclinic-4.0.0-SNAPSHOT.jar', type: 'jar']], credentialsId: '7cf6516f-468b-4fa1-b1e0-5817fbe4318d', groupId: 'org.springframework.samples', nexusUrl: 'localhost:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'maven-snapshots', version: '4.0.0-SNAPSHOT'
             }
         }
     }
