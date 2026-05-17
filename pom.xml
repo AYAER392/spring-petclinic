@@ -547,24 +547,19 @@
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-maven-plugin</artifactId>
         <version>4.9.3.0</version>
-        <plugin>
-    <groupId>com.github.spotbugs</groupId>
-    <artifactId>spotbugs-maven-plugin</artifactId>
-    <version>4.9.3.0</version>
 
-    <configuration>
-        <xmlOutput>true</xmlOutput>
-    </configuration>
+        <configuration>
+          <xmlOutput>true</xmlOutput>
+        </configuration>
 
-    <executions>
-        <execution>
+        <executions>
+          <execution>
             <phase>verify</phase>
             <goals>
-                <goal>check</goal>
+              <goal>check</goal>
             </goals>
-        </execution>
-    </executions>
-</plugin>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </reporting>
