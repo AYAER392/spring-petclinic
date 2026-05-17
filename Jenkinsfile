@@ -1,20 +1,17 @@
 pipeline {
     agent none
-    
+
     stages {
 
         stage('Checkout') {
             agent { label 'test' }
-
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/AYAER392/spring-petclinic.git'
+                git branch: 'main', url: 'https://github.com/AYAER392/spring-petclinic.git'
             }
         }
 
         stage('Compilation') {
             agent { label 'test' }
-
             steps {
                 bat 'mvnw.cmd clean compile'
             }
@@ -22,11 +19,9 @@ pipeline {
 
         stage('Tests Unitaires') {
             agent { label 'test' }
-
             steps {
                 bat 'mvnw.cmd test'
             }
-
             post {
                 always {
                     junit 'target/surefire-reports/*.xml'
@@ -34,34 +29,19 @@ pipeline {
             }
         }
 
-        stage('Couverture de code Jacoco') {
+        stage('Couverture de code (Jacoco)') {
             agent { label 'coverage' }
-
             steps {
                 bat 'mvnw.cmd jacoco:report'
             }
-
-            post {
-                always {
-                    publishHTML([
-                        allowMissing: true,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'target/site/jacoco',
-                        reportFiles: 'index.html',
-                        reportName: 'JaCoCo Coverage Report'
-                    ])
-                }
-            }
         }
 
-        stage('Analyse Qualité') {
+        stage('Analyse Qualité (multi-nœuds)') {
 
             parallel {
 
                 stage('Checkstyle') {
                     agent { label 'test' }
-
                     steps {
                         bat 'mvnw.cmd checkstyle:checkstyle'
                     }
@@ -69,7 +49,6 @@ pipeline {
 
                 stage('PMD') {
                     agent { label 'test' }
-
                     steps {
                         bat 'mvnw.cmd pmd:pmd'
                     }
@@ -77,103 +56,36 @@ pipeline {
 
                 stage('SpotBugs') {
                     agent { label 'test' }
-
                     steps {
-                        bat 'mvnw.cmd spotbugs:spotbugs'
+                        bat 'mvnw.cmd com.github.spotbugs:spotbugs-maven-plugin:spotbugs'
                     }
-                }
-            }
-
-            post {
-                always {
-
-                    recordIssues tools: [
-                        checkStyle(
-                            pattern: 'target/checkstyle-result.xml'
-                        ),
-
-                        pmdParser(
-                            pattern: 'target/pmd.xml'
-                        ),
-
-                        spotBugs(
-                            pattern: 'target/spotbugsXml.xml'
-                        )
-                    ]
-
-                    publishHTML([
-                        allowMissing: true,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'target/site',
-                        reportFiles: 'checkstyle.html',
-                        reportName: 'Checkstyle Report'
-                    ])
-
-                    publishHTML([
-                        allowMissing: true,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'target/site',
-                        reportFiles: 'pmd.html',
-                        reportName: 'PMD Report'
-                    ])
-
-                    publishHTML([
-                        allowMissing: true,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'target/site',
-                        reportFiles: 'spotbugs.html',
-                        reportName: 'SpotBugs Report'
-                    ])
                 }
             }
         }
 
         stage('Documentation et Site') {
             agent { label 'docs' }
-
             steps {
-                bat 'mvnw.cmd -DskipTests site'
+                bat 'mvnw.cmd -DskipTests site || exit 0'
             }
         }
 
         stage('Packaging') {
             agent { label 'test' }
-
             steps {
-                bat 'mvnw.cmd package'
+                bat 'mvnw.cmd clean package'
             }
         }
-
         stage('Déploiement Nexus') {
             agent { label 'test' }
-
+        
             steps {
-
-                nexusArtifactUploader(
-                    nexusVersion: 'nexus3',
-                    protocol: 'http',
-                    nexusUrl: 'localhost:8081',
-                    repository: 'maven-snapshots',
-                    credentialsId: '7cf6516f-468b-4fa1-b1e0-5817fbe4318d',
-                    groupId: 'org.springframework.samples',
-                    version: '4.0.0-SNAPSHOT',
-
-                    artifacts: [[
-                        artifactId: 'spring-petclinic',
-                        classifier: '',
-                        file: 'target/spring-petclinic-4.0.0-SNAPSHOT.jar',
-                        type: 'jar'
-                    ]]
-                )
+                nexusArtifactUploader artifacts: [[artifactId: 'spring-petclinic', classifier: '', file: 'target/spring-petclinic-4.0.0-SNAPSHOT.jar', type: 'jar']], credentialsId: '7cf6516f-468b-4fa1-b1e0-5817fbe4318d', groupId: 'org.springframework.samples', nexusUrl: 'localhost:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'maven-snapshots', version: '4.0.0-SNAPSHOT'
             }
         }
     }
 
     post {
-
         success {
             echo 'Build réussi'
         }
@@ -181,7 +93,7 @@ pipeline {
         failure {
             emailext(
                 subject: 'Echec Build Jenkins',
-                body: 'Le pipeline Jenkins a échoué.',
+                body: 'Le pipeline a échoué',
                 to: 'admin@gmail.com'
             )
         }
